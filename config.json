@@ -1,0 +1,67 @@
+{
+    "settings": {
+        "G": 1,
+        "paused_at_start": false,
+        "debug_mode": true,
+        "show_names": true
+    },
+    "bodies": [
+        {
+            "name": "RED",
+            "position": {
+                "x": -200,
+                "y": 0
+            },
+            "velocity": {
+                "x": 0,
+                "y": 100
+            },
+            "radius": 25,
+            "mass": 1000000,
+            "color": {
+                "r": 255,
+                "g": 128,
+                "b": 128
+            },
+            "width": 0
+        },
+        {
+            "name": "GREEN",
+            "position": {
+                "x": 0,
+                "y": 0
+            },
+            "velocity": {
+                "x": 0,
+                "y": 0
+            },
+            "radius": 25,
+            "mass": 2000000,
+            "color": {
+                "r": 128,
+                "g": 255,
+                "b": 128
+            },
+            "width": 0
+        },
+        {
+            "name": "BLUE",
+            "position": {
+                "x": 200,
+                "y": 0
+            },
+            "velocity": {
+                "x": 0,
+                "y": -100
+            },
+            "radius": 25,
+            "mass": 1000000,
+            "color": {
+                "r": 128,
+                "g": 128,
+                "b": 255
+            },
+            "width": 0
+        }
+    ]
+}
