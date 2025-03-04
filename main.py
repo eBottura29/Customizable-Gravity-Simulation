@@ -296,9 +296,9 @@ def update():
         Settings.camera_position.x += mouse_movement.x
         Settings.camera_position.y -= mouse_movement.y
     if input_manager.get_key_held(pygame.K_EQUALS) and not input_manager.get_key_held(pygame.K_MINUS):
-        Settings.zoom += 0.05
+        Settings.zoom += Settings.zoom / 50
     if not input_manager.get_key_held(pygame.K_EQUALS) and input_manager.get_key_held(pygame.K_MINUS):
-        Settings.zoom -= 0.05
+        Settings.zoom -= Settings.zoom / 50
 
     Settings.zoom = clamp(Settings.zoom, 0.1, 2.5)
 
