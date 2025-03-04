@@ -227,7 +227,7 @@ def update_ui():
     show_names_text.render()
 
     zoom_text = Text(
-        f"ZOOM (+/-): {Settings.zoom:.1f}",
+        f"ZOOM (+/-): {Settings.zoom:.2f}",
         Text.arial_24,
         Vector2(-window.WIDTH // 2 + 32, -window.HEIGHT // 2 + 32 * 1),
         Text.bottom_left,
@@ -300,9 +300,10 @@ def update():
     if not input_manager.get_key_held(pygame.K_EQUALS) and input_manager.get_key_held(pygame.K_MINUS):
         Settings.zoom -= Settings.zoom / 50
 
-    Settings.zoom = clamp(Settings.zoom, 0.1, 2.5)
+    Settings.zoom = clamp(Settings.zoom, 0.05, 2.5)
 
-    barycenter = compute_barycenter(bodies)
+    if Settings.DEBUG:
+        barycenter = compute_barycenter(bodies)
 
     for body in bodies:
         body.update(bodies, barycenter)
