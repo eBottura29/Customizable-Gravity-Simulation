@@ -6,11 +6,15 @@ class Settings:
     G = 0
 
     PAUSED = False
-    DEBUG = True
-    SHOW_NAMES = True
+    DEBUG = False
+    SHOW_NAMES = False
+    GRID_SPACING = 50
+    UNZOOMED_GRID_SPACING_MULTIPLIER = 10
 
     camera_position = Vector2()
     zoom = 1
+
+    INF = 2**16  # not actually infinity, just a big number
 
 
 def runge_kutta_4_motion(position, velocity, acceleration, dt):
@@ -195,46 +199,56 @@ def update_ui():
         )
         ob_count_text.render()
 
-    # bottom left (controls)
-    paused_text = Text(
-        f"PAUSED (SPACEBAR): {Settings.PAUSED}".upper(),
-        Text.arial_24,
-        Vector2(-window.WIDTH // 2 + 32, -window.HEIGHT // 2 + 32 * 4),
-        Text.bottom_left,
-        WHITE,
-        BLACK,
-    )
-    paused_text.render()
+        # bottom left (controls)
+        paused_text = Text(
+            f"PAUSED (SPACEBAR): {Settings.PAUSED}".upper(),
+            Text.arial_24,
+            Vector2(-window.WIDTH // 2 + 32, -window.HEIGHT // 2 + 32 * 5),
+            Text.bottom_left,
+            WHITE,
+            BLACK,
+        )
+        paused_text.render()
 
-    debug_text = Text(
-        f"DEBUG MODE (1): {Settings.DEBUG}".upper(),
-        Text.arial_24,
-        Vector2(-window.WIDTH // 2 + 32, -window.HEIGHT // 2 + 32 * 3),
-        Text.bottom_left,
-        WHITE,
-        BLACK,
-    )
-    debug_text.render()
+        debug_text = Text(
+            f"DEBUG MODE (1): {Settings.DEBUG}".upper(),
+            Text.arial_24,
+            Vector2(-window.WIDTH // 2 + 32, -window.HEIGHT // 2 + 32 * 4),
+            Text.bottom_left,
+            WHITE,
+            BLACK,
+        )
+        debug_text.render()
 
-    show_names_text = Text(
-        f"SHOW NAMES (2): {Settings.SHOW_NAMES}".upper(),
-        Text.arial_24,
-        Vector2(-window.WIDTH // 2 + 32, -window.HEIGHT // 2 + 32 * 2),
-        Text.bottom_left,
-        WHITE,
-        BLACK,
-    )
-    show_names_text.render()
+        show_names_text = Text(
+            f"SHOW NAMES (2): {Settings.SHOW_NAMES}".upper(),
+            Text.arial_24,
+            Vector2(-window.WIDTH // 2 + 32, -window.HEIGHT // 2 + 32 * 3),
+            Text.bottom_left,
+            WHITE,
+            BLACK,
+        )
+        show_names_text.render()
 
-    zoom_text = Text(
-        f"ZOOM (+/-): {Settings.zoom:.2f}",
-        Text.arial_24,
-        Vector2(-window.WIDTH // 2 + 32, -window.HEIGHT // 2 + 32 * 1),
-        Text.bottom_left,
-        WHITE,
-        BLACK,
-    )
-    zoom_text.render()
+        cam_pos_text = Text(
+            f"CAMERA POS (MOUSE): {Settings.camera_position}",
+            Text.arial_24,
+            Vector2(-window.WIDTH // 2 + 32, -window.HEIGHT // 2 + 32 * 2),
+            Text.bottom_left,
+            WHITE,
+            BLACK,
+        )
+        cam_pos_text.render()
+
+        zoom_text = Text(
+            f"ZOOM (+/-): {Settings.zoom:.2f}",
+            Text.arial_24,
+            Vector2(-window.WIDTH // 2 + 32, -window.HEIGHT // 2 + 32 * 1),
+            Text.bottom_left,
+            WHITE,
+            BLACK,
+        )
+        zoom_text.render()
 
 
 def start():
@@ -297,16 +311,109 @@ def update():
         Settings.camera_position.x += mouse_movement.x
         Settings.camera_position.y -= mouse_movement.y
     if input_manager.get_key_held(pygame.K_EQUALS) and not input_manager.get_key_held(pygame.K_MINUS):
-        Settings.zoom += Settings.zoom / 50 # increase zoom
+        Settings.zoom += Settings.zoom / 50  # increase zoom
     if not input_manager.get_key_held(pygame.K_EQUALS) and input_manager.get_key_held(pygame.K_MINUS):
-        Settings.zoom -= Settings.zoom / 50 # decrease zoom
+        Settings.zoom -= Settings.zoom / 50  # decrease zoom
 
-    Settings.zoom = clamp(Settings.zoom, 0.05, 2.5)
+    Settings.zoom = clamp(Settings.zoom, 0.05, 10)
 
     # calculate barycenter
     barycenter = compute_barycenter(bodies)
 
     # draw grid
+    # x-axis line
+    draw_line(
+        window.SURFACE,
+        WHITE,
+        Vector2(-Settings.INF, 0) * Settings.zoom + Settings.camera_position,
+        Vector2(Settings.INF, 0) * Settings.zoom + Settings.camera_position,
+        math.ceil(Settings.zoom * 2) if Settings.zoom > 0.5 else 2,
+    )
+
+    # y-axis line
+    draw_line(
+        window.SURFACE,
+        WHITE,
+        Vector2(0, -Settings.INF) * Settings.zoom + Settings.camera_position,
+        Vector2(0, Settings.INF) * Settings.zoom + Settings.camera_position,
+        math.ceil(Settings.zoom * 2) if Settings.zoom > 0.5 else 2,
+    )
+
+    # horizontal lines
+    if Settings.zoom > 0.33:
+        for y in range(0, Settings.INF // 2, Settings.GRID_SPACING):
+            draw_line(
+                window.SURFACE,
+                WHITE,
+                Vector2(-Settings.INF, y) * Settings.zoom + Settings.camera_position,
+                Vector2(Settings.INF, y) * Settings.zoom + Settings.camera_position,
+                math.ceil(Settings.zoom),
+            )
+
+            draw_line(
+                window.SURFACE,
+                WHITE,
+                Vector2(-Settings.INF, -y) * Settings.zoom + Settings.camera_position,
+                Vector2(Settings.INF, -y) * Settings.zoom + Settings.camera_position,
+                math.ceil(Settings.zoom),
+            )
+    else:
+        for y in range(
+            0, Settings.INF // 2, Settings.GRID_SPACING * Settings.UNZOOMED_GRID_SPACING_MULTIPLIER
+        ):
+            draw_line(
+                window.SURFACE,
+                WHITE,
+                Vector2(-Settings.INF, y) * Settings.zoom + Settings.camera_position,
+                Vector2(Settings.INF, y) * Settings.zoom + Settings.camera_position,
+                math.ceil(Settings.zoom),
+            )
+
+            draw_line(
+                window.SURFACE,
+                WHITE,
+                Vector2(-Settings.INF, -y) * Settings.zoom + Settings.camera_position,
+                Vector2(Settings.INF, -y) * Settings.zoom + Settings.camera_position,
+                math.ceil(Settings.zoom),
+            )
+
+    # vertical lines
+    if Settings.zoom > 0.33:
+        for x in range(0, Settings.INF // 2, Settings.GRID_SPACING):
+            draw_line(
+                window.SURFACE,
+                WHITE,
+                Vector2(x, -Settings.INF) * Settings.zoom + Settings.camera_position,
+                Vector2(x, Settings.INF) * Settings.zoom + Settings.camera_position,
+                math.ceil(Settings.zoom),
+            )
+
+            draw_line(
+                window.SURFACE,
+                WHITE,
+                Vector2(-x, -Settings.INF) * Settings.zoom + Settings.camera_position,
+                Vector2(-x, Settings.INF) * Settings.zoom + Settings.camera_position,
+                math.ceil(Settings.zoom),
+            )
+    else:
+        for x in range(
+            0, Settings.INF // 2, Settings.GRID_SPACING * Settings.UNZOOMED_GRID_SPACING_MULTIPLIER
+        ):
+            draw_line(
+                window.SURFACE,
+                WHITE,
+                Vector2(x, -Settings.INF) * Settings.zoom + Settings.camera_position,
+                Vector2(x, Settings.INF) * Settings.zoom + Settings.camera_position,
+                math.ceil(Settings.zoom),
+            )
+
+            draw_line(
+                window.SURFACE,
+                WHITE,
+                Vector2(-x, -Settings.INF) * Settings.zoom + Settings.camera_position,
+                Vector2(-x, Settings.INF) * Settings.zoom + Settings.camera_position,
+                math.ceil(Settings.zoom),
+            )
 
     # update bodies
     for body in bodies:
