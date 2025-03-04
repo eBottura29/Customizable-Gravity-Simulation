@@ -60,7 +60,7 @@ class Body:
         delta = other.position - self.position
         if delta.magnitude() != 0:
             dir = delta.normalize()
-            force = Settings.G * self.mass * other.mass / delta.sqr_magnitude()  # F=G*m*M/r²
+            force = Settings.G * self.mass * other.mass / delta.sqr_magnitude()  # F=G*m1*m2/r²
             return dir * force
         else:
             return Vector2.random_polar(
@@ -77,7 +77,7 @@ class Body:
 
                 self.total_force += self.calculate_force(other)
 
-            # runge-kutta 4 implementation
+            # runge-kutta 4 implementation (more accurate position and velocity updating)
             self.acceleration = self.total_force / self.mass
 
             self.position, self.velocity = runge_kutta_4_motion(
@@ -136,7 +136,7 @@ def compute_barycenter(bodies):
     total_mass = sum(body.mass for body in bodies)
 
     if total_mass == 0:
-        return Vector2(0, 0)  # Avoid division by zero
+        return Vector2(0, 0)  # avoid division by zero
 
     barycenter = sum((body.position * body.mass for body in bodies), Vector2()) / total_mass
     return barycenter
@@ -242,6 +242,7 @@ def start():
     elapsed_time = 0.0
     current_frame = 0
 
+    # load config from config.json
     with open("config.json", "r") as f:
         contents = f.read()
         config = json.loads(contents)
@@ -291,22 +292,27 @@ def update():
     if input_manager.get_key_down(pygame.K_2):
         Settings.SHOW_NAMES = not Settings.SHOW_NAMES
     if input_manager.get_mouse_held(0):
+        # camera movement
         mouse_movement = input_manager.get_mouse_motion()
-
         Settings.camera_position.x += mouse_movement.x
         Settings.camera_position.y -= mouse_movement.y
     if input_manager.get_key_held(pygame.K_EQUALS) and not input_manager.get_key_held(pygame.K_MINUS):
-        Settings.zoom += Settings.zoom / 50
+        Settings.zoom += Settings.zoom / 50 # increase zoom
     if not input_manager.get_key_held(pygame.K_EQUALS) and input_manager.get_key_held(pygame.K_MINUS):
-        Settings.zoom -= Settings.zoom / 50
+        Settings.zoom -= Settings.zoom / 50 # decrease zoom
 
     Settings.zoom = clamp(Settings.zoom, 0.05, 2.5)
 
+    # calculate barycenter
     barycenter = compute_barycenter(bodies)
 
+    # draw grid
+
+    # update bodies
     for body in bodies:
         body.update(bodies, barycenter)
 
+    # draw barycenter
     if Settings.DEBUG:
         draw_circle(window.SURFACE, WHITE, barycenter * Settings.zoom + Settings.camera_position, 5)
 
