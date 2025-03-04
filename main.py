@@ -302,13 +302,13 @@ def update():
 
     Settings.zoom = clamp(Settings.zoom, 0.05, 2.5)
 
-    if Settings.DEBUG:
-        barycenter = compute_barycenter(bodies)
+    barycenter = compute_barycenter(bodies)
 
     for body in bodies:
         body.update(bodies, barycenter)
 
-    draw_circle(window.SURFACE, WHITE, barycenter * Settings.zoom + Settings.camera_position, 5)
+    if Settings.DEBUG:
+        draw_circle(window.SURFACE, WHITE, barycenter * Settings.zoom + Settings.camera_position, 5)
 
     update_ui()
 
