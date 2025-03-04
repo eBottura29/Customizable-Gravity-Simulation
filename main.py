@@ -9,6 +9,9 @@ class Settings:
     DEBUG = True
     SHOW_NAMES = True
 
+    camera_position = Vector2()
+    zoom = 1
+
 
 def runge_kutta_4_motion(position, velocity, acceleration, dt):
     def f(pos, vel, accel):
@@ -64,7 +67,7 @@ class Body:
                 0, math.tau, 50, 200
             )  # launch in random direction to prevent bunching
 
-    def update(self, bodies):
+    def update(self, bodies, barycenter):
         if not Settings.PAUSED:
             # loops over all bodies and adds together all the forces being applied on this body
             self.total_force = Vector2()
@@ -81,18 +84,38 @@ class Body:
                 self.position, self.velocity, self.acceleration, window.delta_time
             )
 
-        self.render()
+        self.render(barycenter)
 
-    def render(self):
-        draw_circle(window.SURFACE, self.color, self.position, self.radius, self.width)
+    def render(self, barycenter):
+        draw_circle(
+            window.SURFACE,
+            self.color,
+            self.position * Settings.zoom + Settings.camera_position,
+            clamp(self.radius * Settings.zoom, 5, math.inf),
+            self.width,
+        )
 
         if Settings.DEBUG:
-            draw_line(window.SURFACE, GREEN, self.position, self.position + self.velocity, 2)
+            draw_line(
+                window.SURFACE,
+                GREEN,
+                self.position * Settings.zoom + Settings.camera_position,
+                (self.position + self.velocity) * Settings.zoom + Settings.camera_position,
+                2,
+            )
             draw_line(
                 window.SURFACE,
                 RED,
-                self.position,
-                self.position + self.total_force.normalize() * self.radius * 3,
+                self.position * Settings.zoom + Settings.camera_position,
+                (self.position + self.total_force.normalize() * self.radius * 3) * Settings.zoom
+                + Settings.camera_position,
+                2,
+            )
+            draw_line(
+                window.SURFACE,
+                WHITE,
+                self.position * Settings.zoom + Settings.camera_position,
+                barycenter * Settings.zoom + Settings.camera_position,
                 2,
             )
 
@@ -100,12 +123,23 @@ class Body:
             name_text = Text(
                 f"{self.name}",
                 Text.arial_24,
-                Vector2(self.position.x + 32, self.position.y + 16),
+                Vector2(self.position.x + 32, self.position.y + 16) * Settings.zoom
+                + Settings.camera_position,
                 Text.bottom_left,
                 WHITE,
                 BLACK,
             )
             name_text.render()
+
+
+def compute_barycenter(bodies):
+    total_mass = sum(body.mass for body in bodies)
+
+    if total_mass == 0:
+        return Vector2(0, 0)  # Avoid division by zero
+
+    barycenter = sum((body.position * body.mass for body in bodies), Vector2()) / total_mass
+    return barycenter
 
 
 def update_ui():
@@ -165,7 +199,7 @@ def update_ui():
     paused_text = Text(
         f"PAUSED (SPACEBAR): {Settings.PAUSED}".upper(),
         Text.arial_24,
-        Vector2(-window.WIDTH // 2 + 32, -window.HEIGHT // 2 + 32 * 3),
+        Vector2(-window.WIDTH // 2 + 32, -window.HEIGHT // 2 + 32 * 4),
         Text.bottom_left,
         WHITE,
         BLACK,
@@ -175,7 +209,7 @@ def update_ui():
     debug_text = Text(
         f"DEBUG MODE (1): {Settings.DEBUG}".upper(),
         Text.arial_24,
-        Vector2(-window.WIDTH // 2 + 32, -window.HEIGHT // 2 + 32 * 2),
+        Vector2(-window.WIDTH // 2 + 32, -window.HEIGHT // 2 + 32 * 3),
         Text.bottom_left,
         WHITE,
         BLACK,
@@ -185,12 +219,22 @@ def update_ui():
     show_names_text = Text(
         f"SHOW NAMES (2): {Settings.SHOW_NAMES}".upper(),
         Text.arial_24,
-        Vector2(-window.WIDTH // 2 + 32, -window.HEIGHT // 2 + 32 * 1),
+        Vector2(-window.WIDTH // 2 + 32, -window.HEIGHT // 2 + 32 * 2),
         Text.bottom_left,
         WHITE,
         BLACK,
     )
     show_names_text.render()
+
+    zoom_text = Text(
+        f"ZOOM (+/-): {Settings.zoom:.1f}",
+        Text.arial_24,
+        Vector2(-window.WIDTH // 2 + 32, -window.HEIGHT // 2 + 32 * 1),
+        Text.bottom_left,
+        WHITE,
+        BLACK,
+    )
+    zoom_text.render()
 
 
 def start():
@@ -246,9 +290,24 @@ def update():
         Settings.DEBUG = not Settings.DEBUG
     if input_manager.get_key_down(pygame.K_2):
         Settings.SHOW_NAMES = not Settings.SHOW_NAMES
+    if input_manager.get_mouse_held(0):
+        mouse_movement = input_manager.get_mouse_motion()
+
+        Settings.camera_position.x += mouse_movement.x
+        Settings.camera_position.y -= mouse_movement.y
+    if input_manager.get_key_held(pygame.K_EQUALS) and not input_manager.get_key_held(pygame.K_MINUS):
+        Settings.zoom += 0.05
+    if not input_manager.get_key_held(pygame.K_EQUALS) and input_manager.get_key_held(pygame.K_MINUS):
+        Settings.zoom -= 0.05
+
+    Settings.zoom = clamp(Settings.zoom, 0.1, 2.5)
+
+    barycenter = compute_barycenter(bodies)
 
     for body in bodies:
-        body.update(bodies)
+        body.update(bodies, barycenter)
+
+    draw_circle(window.SURFACE, WHITE, barycenter * Settings.zoom + Settings.camera_position, 5)
 
     update_ui()
 
