@@ -1,6 +1,6 @@
 {
     "settings": {
-        "G": 1,
+        "G": 10,
         "paused_at_start": false,
         "debug_mode": true,
         "show_names": true
@@ -14,7 +14,7 @@
             },
             "velocity": {
                 "x": 0,
-                "y": 100
+                "y": 300
             },
             "radius": 25,
             "mass": 1000000,
@@ -52,7 +52,7 @@
             },
             "velocity": {
                 "x": 0,
-                "y": -100
+                "y": -300
             },
             "radius": 25,
             "mass": 1000000,
