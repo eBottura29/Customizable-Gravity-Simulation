@@ -7,59 +7,59 @@
     },
     "bodies": [
         {
-            "name": "RED",
+            "name": "SUN",
             "position": {
-                "x": -200,
+                "x": 0,
                 "y": 0
             },
             "velocity": {
                 "x": 0,
-                "y": 300
+                "y": 0
             },
-            "radius": 25,
-            "mass": 1000000,
+            "radius": 50,
+            "mass": 50000000,
             "color": {
                 "r": 255,
-                "g": 128,
-                "b": 128
-            },
-            "width": 0
-        },
-        {
-            "name": "GREEN",
-            "position": {
-                "x": 0,
-                "y": 0
-            },
-            "velocity": {
-                "x": 0,
-                "y": 0
-            },
-            "radius": 25,
-            "mass": 2000000,
-            "color": {
-                "r": 128,
                 "g": 255,
-                "b": 128
+                "b": 0
             },
             "width": 0
         },
         {
-            "name": "BLUE",
+            "name": "EARTH",
             "position": {
-                "x": 200,
+                "x": -1000,
                 "y": 0
             },
             "velocity": {
                 "x": 0,
-                "y": -300
+                "y": -600
             },
             "radius": 25,
-            "mass": 1000000,
+            "mass": 10000,
             "color": {
-                "r": 128,
-                "g": 128,
+                "r": 0,
+                "g": 255,
                 "b": 255
+            },
+            "width": 0
+        },
+        {
+            "name": "MOON",
+            "position": {
+                "x": -1000,
+                "y": 50
+            },
+            "velocity": {
+                "x": 50,
+                "y": -600
+            },
+            "radius": 10,
+            "mass": 1000,
+            "color": {
+                "r": 200,
+                "g": 200,
+                "b": 200
             },
             "width": 0
         }
