@@ -287,7 +287,6 @@ def update():
     if not input_manager.get_key_held(pygame.K_EQUALS) and input_manager.get_key_held(pygame.K_MINUS):
         Settings.zoom -= Settings.zoom / 50  # decrease zoom
 
-    print(input_manager.get_mouse_wheel())
     Settings.zoom += Settings.zoom / 10 * input_manager.get_mouse_wheel().y
 
     Settings.zoom = clamp(Settings.zoom, 0.05, 10)
