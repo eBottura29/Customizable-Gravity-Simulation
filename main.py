@@ -45,9 +45,7 @@ class Body:
             force = Settings.G * self.mass * other.mass / delta.sqr_magnitude()  # F=G*m1*m2/r²
             return dir * force
         else:
-            return Vector2.random_polar(
-                0, math.tau, 50, 200
-            )  # launch in random direction to prevent bunching
+            return Vector2.random_polar(0, math.tau, 50, 200)  # launch in random direction to prevent bunching
 
     def update(self, bodies, barycenter):
         if not Settings.PAUSED:
@@ -62,9 +60,7 @@ class Body:
             # runge-kutta 4 implementation (more accurate position and velocity updating)
             self.acceleration = self.total_force / self.mass
 
-            self.position, self.velocity = runge_kutta_4(
-                self.position, self.velocity, self.acceleration, window.delta_time
-            )
+            self.position, self.velocity = runge_kutta_4(self.position, self.velocity, self.acceleration, window.delta_time)
 
         self.render(barycenter)
 
@@ -89,8 +85,7 @@ class Body:
                 window.SURFACE,
                 RED,
                 self.position * Settings.zoom + Settings.camera_position,
-                (self.position + self.total_force.normalize() * self.radius * 3) * Settings.zoom
-                + Settings.camera_position,
+                (self.position + self.total_force.normalize() * self.radius * 3) * Settings.zoom + Settings.camera_position,
                 2,
             )
             draw_line(
@@ -105,8 +100,7 @@ class Body:
             name_text = Text(
                 f"{self.name}",
                 Text.arial_24,
-                Vector2(self.position.x + 32, self.position.y + 16) * Settings.zoom
-                + Settings.camera_position,
+                Vector2(self.position.x + 32, self.position.y + 16) * Settings.zoom + Settings.camera_position,
                 Text.bottom_left,
                 WHITE,
                 BLACK,
@@ -293,6 +287,9 @@ def update():
     if not input_manager.get_key_held(pygame.K_EQUALS) and input_manager.get_key_held(pygame.K_MINUS):
         Settings.zoom -= Settings.zoom / 50  # decrease zoom
 
+    print(input_manager.get_mouse_wheel())
+    Settings.zoom += Settings.zoom / 10 * input_manager.get_mouse_wheel().y
+
     Settings.zoom = clamp(Settings.zoom, 0.05, 10)
 
     # calculate barycenter
@@ -336,9 +333,7 @@ def update():
                 math.ceil(Settings.zoom),
             )
     else:
-        for y in range(
-            0, Settings.INF // 2, Settings.GRID_SPACING * Settings.UNZOOMED_GRID_SPACING_MULTIPLIER
-        ):
+        for y in range(0, Settings.INF // 2, Settings.GRID_SPACING * Settings.UNZOOMED_GRID_SPACING_MULTIPLIER):
             draw_line(
                 window.SURFACE,
                 WHITE,
@@ -374,9 +369,7 @@ def update():
                 math.ceil(Settings.zoom),
             )
     else:
-        for x in range(
-            0, Settings.INF // 2, Settings.GRID_SPACING * Settings.UNZOOMED_GRID_SPACING_MULTIPLIER
-        ):
+        for x in range(0, Settings.INF // 2, Settings.GRID_SPACING * Settings.UNZOOMED_GRID_SPACING_MULTIPLIER):
             draw_line(
                 window.SURFACE,
                 WHITE,
